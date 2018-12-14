@@ -106,26 +106,28 @@ const addIdToCurrentItem = function() {
 };
 
 const reserveItem = function() {
-    addIdToCurrentItem();
+    casper.wait(2000, function() {
+        addIdToCurrentItem();
 
-    if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID)) {
-        if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_UNAVAILABLE)) {
-            log(MESSAGES.CALENDAR_ITEM_UNAVAILABLE);
-        } else if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED)) {
-            log(MESSAGES.CALENDAR_ITEM_BOOKED);
+        if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID)) {
+            if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_UNAVAILABLE)) {
+                log(MESSAGES.CALENDAR_ITEM_UNAVAILABLE);
+            } else if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED)) {
+                log(MESSAGES.CALENDAR_ITEM_BOOKED);
+            } else {
+                casper.click('#' + OPTIONS.RANDOM_ITEM_ID + ' ' + ELEMENTS.CALENDAR_ITEM_BUTTON);
+
+                casper.waitForSelector('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED, function() {
+                    log(MESSAGES.CALENDAR_ITEM_SUCCESS);
+                    casper.exit();
+                }, function() {
+                    log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
+                });
+            }
         } else {
-            casper.click('#' + OPTIONS.RANDOM_ITEM_ID + ' ' + ELEMENTS.CALENDAR_ITEM_BUTTON);
-
-            casper.waitForSelector('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED, function() {
-                log(MESSAGES.CALENDAR_ITEM_SUCCESS);
-                casper.exit();
-            }, function() {
-                log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
-            });
+            log(MESSAGES.CALENDAR_ITEM_NOT_FOUND);
         }
-    } else {
-        log(MESSAGES.CALENDAR_ITEM_NOT_FOUND);
-    }
+    });
 };
 
 const runIteration = function() {

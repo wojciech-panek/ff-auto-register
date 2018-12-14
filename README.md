@@ -22,7 +22,7 @@
 # Usage
 
  ```shell
-  $ npm start -- --user="email@domain.com" --password="password" --club="24" --day="14" --hour="17:00" --classes="Trengin Funkcjonalny"
+  $ npm start -- --user="email@domain.com" --password="password" --club="24" --day="14" --hour="17:00" --classes="Trengin Funkcjonalny" --capture-errors
   ```
   
 ## Params
@@ -38,4 +38,6 @@
 #### 5. `hour`: hour of classes to book
 
 #### 6. `classes`: name (can be part of the name) of the classes to distinguish classess starting at the same hour
+
+#### 7. `capture-errors`: if passed, program will save screenshots of failed attempts
 

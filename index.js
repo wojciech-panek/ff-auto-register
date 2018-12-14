@@ -10,6 +10,7 @@ const OPTIONS = {
     CLUB_ID: casper.cli.get('club'),
     DAY: casper.cli.get('day'),
     HOUR: casper.cli.get('hour'),
+    CAPTURE_ERRORS: casper.cli.has('capture-errors'),
     CLASSES_NAME: casper.cli.get('classes'),
 };
 
@@ -19,11 +20,13 @@ const ELEMENTS = {
     INPUT_LOGIN: 'input[name=Login]',
     INPUT_PASSWORD: 'input[name=Password]',
     PROFILE_ICON: '.glyphicon-cp-profile',
+    LOADER: '.baf-load-mask',
     CALENDAR_ITEM: '.cp-calendar-item',
     CALENDAR_ITEM_HOUR: '.calendar-item-start',
     CALENDAR_ITEM_NAME: '.calendar-item-name',
     CALENDAR_ITEM_UNAVAILABLE: '.is-unavailable',
     CALENDAR_ITEM_BOOKED: '.is-booked',
+    CALENDAR_ITEM_AWAITING: '.is-awaiting',
     CALENDAR_ITEM_BUTTON: '.cp-icon-btn-classes-action',
 };
 
@@ -35,6 +38,7 @@ const MESSAGES = {
     CALENDAR_ITEM_RESERVED_TIMEOUT: 'Błąd: nie udało się zarezerwować zajęć',
     CALENDAR_ITEM_NOT_FOUND: 'Błąd: nie udało się odnaleźć zajęć',
     CALENDAR_ITEM_SUCCESS: 'Sukces: zarezerwowano zajęcia',
+    CALENDAR_ITEM_AWAITING: 'Sukces: zapisano na listę rezerwową',
     INVALID_STATE: 'Błąd: nie udało się wyświetlić strony',
 };
 
@@ -51,6 +55,12 @@ const log = function (message) {
     casper.echo('[' + date + '] ' + message);
 };
 
+const capture = function (name) {
+    if (OPTIONS.CAPTURE_ERRORS) {
+        casper.capture(name + '.jpg');
+    }
+};
+
 const signIn = function() {
     const formValues = {};
     formValues[ELEMENTS.INPUT_LOGIN] = OPTIONS.USERNAME;
@@ -63,6 +73,7 @@ const signIn = function() {
     casper.waitForSelector(ELEMENTS.PROFILE_ICON, function() {
         navigateToClassesCalendarTab();
     }, function() {
+        capture('LOGIN_TIMEOUT');
         log(MESSAGES.LOGIN_TIMEOUT);
     });
 };
@@ -71,9 +82,15 @@ const navigateToClassesCalendarTab = function() {
     casper.open(getProperDayUrl());
 
     casper.waitForSelector(ELEMENTS.CALENDAR_ITEM, function() {
-        reserveItem();
+        casper.waitWhileVisible(ELEMENTS.LOADER, function () {
+            reserveItem();
+        }, function () {
+            capture('CALENDAR_REDIRECT_TIMEOUT_2');
+            log(MESSAGES.CALENDAR_REDIRECT_TIMEOUT);
+        });
     }, function() {
-        logc(MESSAGES.CALENDAR_REDIRECT_TIMEOUT);
+        capture('CALENDAR_REDIRECT_TIMEOUT_1');
+        log(MESSAGES.CALENDAR_REDIRECT_TIMEOUT);
     })
 };
 
@@ -121,10 +138,17 @@ const reserveItem = function() {
                     log(MESSAGES.CALENDAR_ITEM_SUCCESS);
                     casper.exit();
                 }, function() {
-                    log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
+                    if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_AWAITING)) {
+                        log(MESSAGES.CALENDAR_ITEM_AWAITING);
+                        casper.exit();
+                    } else {
+                        capture('CALENDAR_ITEM_RESERVED_TIMEOUT');
+                        log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
+                    }
                 });
             }
         } else {
+            capture('CALENDAR_ITEM_NOT_FOUND');
             log(MESSAGES.CALENDAR_ITEM_NOT_FOUND);
         }
     });
@@ -139,10 +163,12 @@ const runIteration = function() {
             } else if (casper.exists(ELEMENTS.PROFILE_ICON)) {
                 navigateToClassesCalendarTab();
             } else {
+                capture('INVALID_STATE_2');
                 log(MESSAGES.INVALID_STATE);
             }
         });
     }, function() {
+        capture('INVALID_STATE_1');
         log(MESSAGES.INVALID_STATE);
     });
 

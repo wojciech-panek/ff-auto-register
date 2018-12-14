@@ -1,0 +1,24 @@
+{
+  "name": "ff-auto-register",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "casperjs index.js",
+    "preview": "slimerjs --debug=true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wojciech-panek/ff-auto-register.git"
+  },
+  "author": "Wojciech Panek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wojciech-panek/ff-auto-register/issues"
+  },
+  "homepage": "https://github.com/wojciech-panek/ff-auto-register#readme",
+  "dependencies": {
+    "casperjs": "^1.1.4",
+    "phantomjs-prebuilt": "^2.1.16"
+  }
+}

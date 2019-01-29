@@ -158,7 +158,10 @@ const runIteration = function() {
     casper.open(OPTIONS.BASE_URL);
     casper.waitForSelector(ELEMENTS.MAIN_WRAPPER, function() {
         casper.wait(2000, function() {
-            if (casper.exists(ELEMENTS.AUTH_FORM)) {
+            if (casper.exists(ELEMENTS.AUTH_FORM) &&
+                casper.exists(ELEMENTS.INPUT_LOGIN) &&
+                casper.exists(ELEMENTS.INPUT_PASSWORD)
+            ) {
                 signIn();
             } else if (casper.exists(ELEMENTS.PROFILE_ICON)) {
                 navigateToClassesCalendarTab();

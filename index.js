@@ -41,6 +41,7 @@ const MESSAGES = {
     CALENDAR_ITEM_NOT_FOUND: 'Błąd: nie udało się odnaleźć zajęć',
     CALENDAR_ITEM_SUCCESS: 'Sukces: zarezerwowano zajęcia',
     CALENDAR_ITEM_AWAITING: 'Sukces: zapisano na listę rezerwową',
+    CALENDAR_ITEM_ERROR: 'Błąd: nie udało się odnaleźć zajęć',
     INVALID_STATE: 'Błąd: nie udało się wyświetlić strony',
 };
 
@@ -149,8 +150,8 @@ const reserveItem = function() {
                             log(MESSAGES.CALENDAR_ITEM_AWAITING);
                             casper.exit();
                         } else {
-                            capture('CALENDAR_ITEM_RESERVED_TIMEOUT');
-                            log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
+                            capture('CALENDAR_ITEM_ERROR');
+                            log(MESSAGES.CALENDAR_ITEM_ERROR);
                         }
                     });
                 }, function() {

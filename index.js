@@ -24,17 +24,19 @@ const ELEMENTS = {
     CALENDAR_ITEM: '.cp-calendar-item',
     CALENDAR_ITEM_HOUR: '.calendar-item-start',
     CALENDAR_ITEM_NAME: '.calendar-item-name',
-    CALENDAR_ITEM_UNAVAILABLE: '.is-unavailable',
+    CALENDAR_ITEM_UNAVAILABLE: '.is-fullbooked',
+    CALENDAR_ITEM_CONTENT: '.calendar-item-content',
     CALENDAR_ITEM_BOOKED: '.is-booked',
     CALENDAR_ITEM_AWAITING: '.is-awaiting',
-    CALENDAR_ITEM_BUTTON: '.cp-icon-btn-classes-action',
+    CALENDAR_ITEM_BOOK_BUTTON: '.class-details-single-user-book .class-details-book-btn',
 };
 
 const MESSAGES = {
     LOGIN_TIMEOUT: 'Błąd: nie udało się zalogować',
     CALENDAR_REDIRECT_TIMEOUT: 'Błąd: nie udało się wyświetlić listy zajęć',
-    CALENDAR_ITEM_UNAVAILABLE: 'Uwaga: Zajęcia nie są dostępne chwilowo dostępne',
+    CALENDAR_ITEM_UNAVAILABLE: 'Uwaga: Zajęcia nie są chwilowo dostępne',
     CALENDAR_ITEM_BOOKED: 'Uwaga: Zajęcia są już zarezerwowane',
+    CALENDAR_ITEM_ALREADY_AWAITING: 'Uwaga: Jesteś jużna liście rezerwowej',
     CALENDAR_ITEM_RESERVED_TIMEOUT: 'Błąd: nie udało się zarezerwować zajęć',
     CALENDAR_ITEM_NOT_FOUND: 'Błąd: nie udało się odnaleźć zajęć',
     CALENDAR_ITEM_SUCCESS: 'Sukces: zarezerwowano zajęcia',
@@ -131,20 +133,29 @@ const reserveItem = function() {
                 log(MESSAGES.CALENDAR_ITEM_UNAVAILABLE);
             } else if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED)) {
                 log(MESSAGES.CALENDAR_ITEM_BOOKED);
+            } else if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_AWAITING)) {
+                log(MESSAGES.CALENDAR_ITEM_ALREADY_AWAITING);
             } else {
-                casper.click('#' + OPTIONS.RANDOM_ITEM_ID + ' ' + ELEMENTS.CALENDAR_ITEM_BUTTON);
+                casper.click('#' + OPTIONS.RANDOM_ITEM_ID + ' ' + ELEMENTS.CALENDAR_ITEM_CONTENT);
 
-                casper.waitForSelector('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_BOOKED, function() {
-                    log(MESSAGES.CALENDAR_ITEM_SUCCESS);
-                    casper.exit();
+                casper.waitForSelector(ELEMENTS.CALENDAR_ITEM_BOOK_BUTTON, function() {
+                    casper.click(ELEMENTS.CALENDAR_ITEM_BOOK_BUTTON);
+
+                    casper.wait(1000, function() {
+                        if (casper.exists(ELEMENTS.CALENDAR_ITEM_BOOK_BUTTON + ELEMENTS.CALENDAR_ITEM_BOOKED)) {
+                            log(MESSAGES.CALENDAR_ITEM_SUCCESS);
+                            casper.exit();
+                        } else if (casper.exists(ELEMENTS.CALENDAR_ITEM_BOOK_BUTTON + ELEMENTS.CALENDAR_ITEM_AWAITING)) {
+                            log(MESSAGES.CALENDAR_ITEM_AWAITING);
+                            casper.exit();
+                        } else {
+                            capture('CALENDAR_ITEM_RESERVED_TIMEOUT');
+                            log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
+                        }
+                    });
                 }, function() {
-                    if (casper.exists('#' + OPTIONS.RANDOM_ITEM_ID + ELEMENTS.CALENDAR_ITEM_AWAITING)) {
-                        log(MESSAGES.CALENDAR_ITEM_AWAITING);
-                        casper.exit();
-                    } else {
-                        capture('CALENDAR_ITEM_RESERVED_TIMEOUT');
-                        log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
-                    }
+                    capture('CALENDAR_ITEM_RESERVED_TIMEOUT');
+                    log(MESSAGES.CALENDAR_ITEM_RESERVED_TIMEOUT);
                 });
             }
         } else {
